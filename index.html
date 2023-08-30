@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Memory Cache Speed Test</title>
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <div class="title">Memory Cache Speed Test</div>
+    <select id="list" size="10" multiple></select>
+    <div class="container" id="buttons1">
+      <div><span id="bytes">0</span> bytes</div>
+      <button id="copy">Copy</button>
+      <button id="release">Release</button>
+      <button id="test">Test</button>
+      <div>
+        Repetition count: <input id="repetitionCount" value="1" size="7" />
+      </div>
+    </div>
+    <div class="container">
+      <div class="title">Create</div>
+      <div>Item count: <input id="itemCount" value="1000" size="7" /></div>
+      <div><button id="randomData">Random Data</button></div>
+      <div>
+        <button id="inOrder">In Order</button> Partition count:
+        <input id="partitionCount" value="1" size="4" />
+      </div>
+    </div>
+  </body>
+</html>

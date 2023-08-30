@@ -1,0 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Gluten:wght@200;400;700&display=swap');
+
+:root {
+  font-family: 'Gluten', cursive;
+  font-weight: 200;
+  font-size: 24pt;
+}
+
+
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  place-items: center;
+  align-items: stretch;
+  gap: 0.5em;
+  padding: 0.5em;
+}
+
+.container {
+  border: solid black 1px;
+  padding: 0.5em;  
+}
+
+.title {
+  font-weight: bold;
+  text-align: center;
+}
+
+#buttons1 {
+  display: flex;
+  place-items: center;
+  gap: 0.5em;
+
+}
+
+select:empty {
+  background-color: blueviolet;
+}
