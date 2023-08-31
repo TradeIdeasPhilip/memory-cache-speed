@@ -1,6 +1,30 @@
 import "./style.css";
 import { initializedArray } from "phil-lib/misc";
-import {getById} from "phil-lib/client-misc";
+import { getById } from "phil-lib/client-misc";
+
+class Namer {
+  private constructor() {
+    throw new Error("wtf");
+  }
+  static readonly #descriptionSymbol = Symbol("Namer description");
+  static #lastId = 0;
+  static add(destination: object, description: string | object) {
+    if (this.#descriptionSymbol in destination) {
+      throw new Error("wtf — duplicate object name");
+    }
+    if (typeof description !== "string") {
+      const newName = (description as any)[this.#descriptionSymbol];
+      description = newName;
+    }
+    if (typeof description != "string") {
+      throw new Error("wtf");
+    }
+    (destination as any)[this.#descriptionSymbol] = description;
+    const asString = `#${this.#lastId} ${description}`;
+    this.#lastId++;
+    destination.toString = () => asString;
+  }
+}
 
 function createRandom(count: number) {
   const result = new Uint32Array(count);
@@ -15,7 +39,7 @@ function createRandom(count: number) {
   }
   result[destinationIndex] = 0;
   const description = `Random ${count}`;
-  result.toString = () => description;
+  Namer.add(result, description);
   return result;
 }
 
@@ -34,12 +58,13 @@ function createInterleaved(itemCount: number, partitionCount: number) {
   }
   result[comeFromIndex] = 0; // Loop from the last one back to the first.
   const description = `Interleaved ${itemCount} ⋰ ${partitionCount}`;
-  result.toString = () => description;
+  Namer.add(result, description);
   return result;
 }
 
-function copyMemory(memory : Uint32Array) {
+function copyMemory(memory: Uint32Array) {
   const result = new Uint32Array(memory);
+  Namer.add(result, memory);
   return result;
 }
 
@@ -58,11 +83,11 @@ const randomDataButton = getById("randomData", HTMLButtonElement);
 const inOrderButton = getById("inOrder", HTMLButtonElement);
 const partitionCountInput = getById("partitionCount", HTMLInputElement);
 
-function parseInt(s : string) {
+function parseInt(s: string) {
   /**
    * Unary + is similar to Number.parseDouble(), but they each choose
    * to ignore different errors.  I want to return `undefined` if either
-   * one reports an error. 
+   * one reports an error.
    */
   const asNumber = +s;
   if (!isFinite(asNumber)) {
@@ -81,7 +106,7 @@ function parseInt(s : string) {
   return asInteger;
 }
 
-function parsePositiveInt(s : string) {
+function parsePositiveInt(s: string) {
   const i = parseInt(s);
   if (i === undefined || i <= 0) {
     return undefined;
@@ -90,7 +115,7 @@ function parsePositiveInt(s : string) {
   }
 }
 
-function isPositiveInt(s : string) {
+function isPositiveInt(s: string) {
   return parsePositiveInt(s) !== undefined;
 }
 
@@ -102,11 +127,11 @@ function updateGUI() {
   releaseButton.disabled = nothingSelected;
   if (!isPositiveInt(repetitionCountInput.value)) {
     // error
-    repetitionCountInput.style.backgroundColor="pink";
+    repetitionCountInput.style.backgroundColor = "pink";
     testButton.disabled = true;
   } else {
     // What if a test is currently running?
-    repetitionCountInput.style.backgroundColor="";
+    repetitionCountInput.style.backgroundColor = "";
     testButton.disabled = nothingSelected;
   }
   const itemCountValid = isPositiveInt(itemCountInput.value);
@@ -118,10 +143,10 @@ function updateGUI() {
     randomDataButton.disabled = true;
   }
   const partitionCountValid = isPositiveInt(partitionCountInput.value);
-  partitionCountInput.style.backgroundColor = partitionCountValid?"":"pink";
+  partitionCountInput.style.backgroundColor = partitionCountValid ? "" : "pink";
   inOrderButton.disabled = !(itemCountValid && partitionCountValid);
   let byteCount = 0;
-  selected.forEach(option => {
+  selected.forEach((option) => {
     const memory = getMemory(option);
     byteCount += memory.length * memory.BYTES_PER_ELEMENT;
   });
@@ -130,13 +155,22 @@ function updateGUI() {
 
 (window as any).updateGUI = updateGUI;
 
+[
+  repetitionCountInput,
+  partitionCountInput,
+  itemCountInput,
+  listElement,
+].forEach((input) => input.addEventListener("input", updateGUI));
+
+updateGUI();
+
 const memorySymbol = Symbol("memory");
 
-function setMemory(option : HTMLOptionElement, memory : Uint32Array) {
+function setMemory(option: HTMLOptionElement, memory: Uint32Array) {
   (option as any)[memorySymbol] = memory;
 }
 
-function getMemory(option : HTMLOptionElement) : Uint32Array {
+function getMemory(option: HTMLOptionElement): Uint32Array {
   const memory = (option as any)[memorySymbol];
   if (memory instanceof Uint32Array) {
     return memory;
@@ -145,10 +179,10 @@ function getMemory(option : HTMLOptionElement) : Uint32Array {
   }
 }
 
-function addMemoryOption(memory : Uint32Array) : HTMLOptionElement {
+function addMemoryOption(memory: Uint32Array): HTMLOptionElement {
   const option = document.createElement("option");
   option.innerText = memory.toString();
-  setMemory(option,memory);
+  setMemory(option, memory);
   listElement.appendChild(option);
   return option;
 }
@@ -172,18 +206,69 @@ inOrderButton.addEventListener("click", () => {
     throw new Error("wtf");
   }
   const memory = createInterleaved(itemCount, partitionCount);
-  const option = document.createElement("option");
-  option.innerText = memory.toString();
-  setMemory(option,memory);
-  listElement.appendChild(option);
+  addMemoryOption(memory);
 });
 
 copyButton.addEventListener("click", () => {
   const selected = [...listElement.selectedOptions];
-  selected.forEach(option => addMemoryOption(copyMemory(getMemory(option))));
+  selected.forEach((option) => addMemoryOption(copyMemory(getMemory(option))));
 });
 
 releaseButton.addEventListener("click", () => {
   const selected = [...listElement.selectedOptions];
-  selected.forEach(option => option.remove());
+  selected.forEach((option) => option.remove());
+  updateGUI();
 });
+
+function testMemory(allMemory: readonly Uint32Array[], count = 1) {
+  const startTime = performance.now();
+  for (let c = 0; c < count; c++) {
+    allMemory.forEach((memory) => {
+      const max = memory.length - 1;
+      let index = 0;
+      for (let i = 0; i < max; i++) {
+        index = memory[index];
+        if (index == 0) {
+          // This shouldn't happen.  If it does then the program must have made a
+          // mistake when it initialized the memory.  In any case it's good to
+          // check for this so the compiler doesn't just optimize the whole loop
+          // away!
+          throw new Error("wtf");
+        }
+      }
+      index = memory[index];
+      if (index != 0) {
+        // This shouldn't happen.  We should have made it exactly one time through
+        // the loop, landing where we started, at 0.
+        throw new Error("wtf");
+      }
+    });
+  }
+  const endTime = performance.now();
+  return endTime - startTime;
+}
+
+testButton.addEventListener("click", () => {
+  const selected = [...listElement.selectedOptions];
+  const repetitionCount = parsePositiveInt(repetitionCountInput.value);
+  if (repetitionCount === undefined) {
+    throw new Error("wtf — The button should have been disabled.");
+  }
+  try {
+    const milliseconds = testMemory(selected.map(getMemory), repetitionCount);
+    console.log({
+      totalMilliseconds: milliseconds,
+      repetitionCount,
+      millisecondsPerRepetition: milliseconds / repetitionCount,
+    });
+  } catch (reason: unknown) {
+    console.error("test aborted", reason);
+  }
+});
+
+/*
+c++ gives you so much control over how your data is laid out.  You can possibly
+make things a lot faster by having related data all close together in memory.
+
+Is the same thing true in JavaScript?  Can I measure it?
+*/

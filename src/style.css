@@ -1,11 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Gluten:wght@200;400;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Gluten:wght@200;400;700&display=swap");
 
 :root {
-  font-family: 'Gluten', cursive;
+  font-family: "Gluten", cursive;
   font-weight: 200;
   font-size: 24pt;
 }
-
 
 body {
   margin: 0;
@@ -19,7 +18,7 @@ body {
 
 .container {
   border: solid black 1px;
-  padding: 0.5em;  
+  padding: 0.5em;
 }
 
 .title {
@@ -31,9 +30,22 @@ body {
   display: flex;
   place-items: center;
   gap: 0.5em;
-
 }
 
-select:empty {
-  background-color: blueviolet;
+select {
+  position: relative;
+  font-family: "Gluten", cursive;
+  font-weight: 200;
+  font-size: 18pt;
+}
+
+select:empty::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  content: "Create some memory.";
+  font-size: 36pt;
 }
