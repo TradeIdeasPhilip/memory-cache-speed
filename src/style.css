@@ -1,8 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Gluten:wght@200;400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&display=swap");
 
 :root {
-  font-family: "Gluten", cursive;
-  font-weight: 200;
+  font-family: "Kalam", cursive;
+  font-weight: 300;
   font-size: 24pt;
 }
 
@@ -35,8 +36,8 @@ body {
 
 select {
   position: relative;
-  font-family: "Gluten", cursive;
-  font-weight: 200;
+  font-family: "Kalam", cursive;
+  font-weight: 300;
   font-size: 18pt;
 }
 
@@ -48,4 +49,30 @@ select:empty::after {
   text-align: center;
   content: "Create some memory.";
   font-size: 36pt;
+}
+
+.threadRow {
+  display: flex;
+  column-gap: 0.5em;
+  align-items: center;
+}
+
+.memoryName {
+  color: cyan;
+  text-shadow: 1px 1px 2px blue;
+}
+
+[data-status="running"] {
+  color: #fd0;
+  text-shadow: 1px 1px 1.5px #750;
+}
+
+[data-status="complete"] {
+  color: greenyellow;
+  text-shadow: 1px 1px 1.5px green;
+}
+
+[data-status="error"] {
+  color: pink;
+  text-shadow: 1px 1px 2px darkred;
 }
