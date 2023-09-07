@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Memory Cache Speed Test</title>
     
-    <script type="module" crossorigin src="./assets/main-e4804184.js"></script>
-    <link rel="stylesheet" href="./assets/index-aab533e7.css">
+    <script type="module" crossorigin src="./assets/main-32675221.js"></script>
+    <link rel="stylesheet" href="./assets/index-e6698ca2.css">
   </head>
   <body>
     <div class="title">Memory Cache Speed Test</div>
@@ -30,23 +30,38 @@
       </div>
     </div>
     <div style="font-size: 18pt">Output is directed to the console window.</div>
-    <div class="threadRow">
-      <span class="timeStamp">12:34:18 AM</span>
-      <span class="memoryName">#0 Random 1000</span> ⨉ 500000
-      <button>✗</button> <span data-status="running">running</span>
-    </div>
-    <div class="threadRow">
-      12:34:20 AM <span class="memoryName">#1 Random 1000</span> ⨉ 5
-      <button>✗</button>
-      <span data-status="complete">5µs total, 1µs / repetition</span>
-    </div>
-    <div class="threadRow">
-      1:04:20 AM
-      <span data-memoryList
-        >{<span class="memoryName">#0 Random 1000</span>,
-        <span class="memoryName">#1 Random 1000</span>}</span
-      >
-      ⨉ 5 <button>✗</button> <span data-status="error">ln(-1)</span>
-    </div>
+    <table id="threadList">
+      <tr>
+        <th>Time</th>
+        <th>Memory</th>
+        <th>Count</th>
+        <th>Status</th>
+        <th>✗</th>
+      </tr>
+      <tr>
+        <td class="timeStamp">12:34:18.420</td>
+        <td><span class="memoryName">#0 Random 1000</span></td>
+        <td class="repeatCount">500,000</td>
+        <td data-status="running">running</td>
+        <td><button>✗</button></td>
+      </tr>
+      <tr>
+        <td>12:34:20.760</td>
+        <td><span class="memoryName">#1 Random 1000</span></td>
+        <td class="repeatCount">5</td>
+        <td data-status="complete">5µs total, 1µs / repetition</td>
+        <td><button>✗</button></td>
+      </tr>
+      <tr>
+        <td>1:04:20.976</td>
+        <td data-memoryList>
+          <span class="memoryName">#0 Random 1000</span>,
+          <span class="memoryName">#1 Random 1000</span>
+        </td>
+        <td class="repeatCount">10</td>
+        <td data-status="error">ln(-1)</td>
+        <td><button>✗</button></td>
+      </tr>
+    </table>
   </body>
 </html>
