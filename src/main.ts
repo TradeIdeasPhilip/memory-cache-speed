@@ -1,6 +1,7 @@
 import "./style.css";
-import { initializedArray } from "phil-lib/misc";
+import { initializedArray, makePromise } from "phil-lib/misc";
 import { getById } from "phil-lib/client-misc";
+import { ToThread, fromThreadIsValid } from "./shared";
 
 class Namer {
   private constructor() {
@@ -220,42 +221,17 @@ releaseButton.addEventListener("click", () => {
   updateGUI();
 });
 
-function testMemory(allMemory: readonly Uint32Array[], count = 1) {
-  const startTime = performance.now();
-  for (let c = 0; c < count; c++) {
-    allMemory.forEach((memory) => {
-      const max = memory.length - 1;
-      let index = 0;
-      for (let i = 0; i < max; i++) {
-        index = memory[index];
-        if (index == 0) {
-          // This shouldn't happen.  If it does then the program must have made a
-          // mistake when it initialized the memory.  In any case it's good to
-          // check for this so the compiler doesn't just optimize the whole loop
-          // away!
-          throw new Error("wtf");
-        }
-      }
-      index = memory[index];
-      if (index != 0) {
-        // This shouldn't happen.  We should have made it exactly one time through
-        // the loop, landing where we started, at 0.
-        throw new Error("wtf");
-      }
-    });
-  }
-  const endTime = performance.now();
-  return endTime - startTime;
-}
-
-testButton.addEventListener("click", () => {
+testButton.addEventListener("click", async () => {
   const selected = [...listElement.selectedOptions];
   const repetitionCount = parsePositiveInt(repetitionCountInput.value);
   if (repetitionCount === undefined) {
     throw new Error("wtf — The button should have been disabled.");
   }
   try {
-    const milliseconds = testMemory(selected.map(getMemory), repetitionCount);
+    const milliseconds = await sendRequestToThread(
+      selected.map(getMemory),
+      repetitionCount
+    );
     console.log({
       totalMilliseconds: milliseconds,
       repetitionCount,
@@ -265,6 +241,45 @@ testButton.addEventListener("click", () => {
     console.error("test aborted", reason);
   }
 });
+
+async function sendRequestToThread(
+  memory: Uint32Array[],
+  repetitionCount: number
+) {
+  const worker = new Worker(new URL("./worker.ts", import.meta.url), {
+    type: "module",
+  });
+
+  const request: ToThread = {
+    type: "testMemory",
+    memory,
+    repetitionCount,
+  };
+  const fromThread = makePromise<number>();
+  worker.addEventListener("message", (messageEvent) => {
+    const response = messageEvent.data;
+    if (fromThreadIsValid(response)) {
+      if (response.type == "success") {
+        fromThread.resolve(response.timeInMS);
+      } else {
+        fromThread.reject(response.message);
+      }
+    } else {
+      console.error(fromThread, "message");
+      fromThread.reject(new Error("Unexpected response from thread."));
+    }
+  });
+  worker.addEventListener("error", (event) => {
+    console.error(event, "error");
+    fromThread.reject("error");
+  });
+  worker.addEventListener("messageerror", (event) => {
+    console.error(event, "messageerror");
+    fromThread.reject("messageerror");
+  });
+  worker.postMessage(request);
+  return fromThread.promise;
+}
 
 /*
 c++ gives you so much control over how your data is laid out.  You can possibly
