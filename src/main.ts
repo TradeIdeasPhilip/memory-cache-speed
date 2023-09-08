@@ -1,5 +1,5 @@
 import "./style.css";
-import { initializedArray, makePromise } from "phil-lib/misc";
+import { assertClass, initializedArray, makePromise } from "phil-lib/misc";
 import { getById } from "phil-lib/client-misc";
 import { ToThread, fromThreadIsValid } from "./shared";
 
@@ -39,7 +39,7 @@ function createRandom(count: number) {
     destinationIndex = result[destinationIndex];
   }
   result[destinationIndex] = 0;
-  const description = `Random ${count}`;
+  const description = `Random ${count.toLocaleString()}`;
   Namer.add(result, description);
   return result;
 }
@@ -58,7 +58,7 @@ function createInterleaved(itemCount: number, partitionCount: number) {
     }
   }
   result[comeFromIndex] = 0; // Loop from the last one back to the first.
-  const description = `Interleaved ${itemCount} ⋰ ${partitionCount}`;
+  const description = `Interleaved ${itemCount.toLocaleString()} ⋰ ${partitionCount.toLocaleString()}`;
   Namer.add(result, description);
   return result;
 }
@@ -83,6 +83,11 @@ const itemCountInput = getById("itemCount", HTMLInputElement);
 const randomDataButton = getById("randomData", HTMLButtonElement);
 const inOrderButton = getById("inOrder", HTMLButtonElement);
 const partitionCountInput = getById("partitionCount", HTMLInputElement);
+
+const headerRow = getById("header", HTMLTableRowElement);
+const rowTemplate = getById("row", HTMLTemplateElement).content.querySelector(
+  "tr"
+)!;
 
 function parseInt(s: string) {
   /**
@@ -221,24 +226,64 @@ releaseButton.addEventListener("click", () => {
   updateGUI();
 });
 
+const simpleNumberFormat = new Intl.NumberFormat("en-US", {
+  maximumSignificantDigits: 6,
+});
+
 testButton.addEventListener("click", async () => {
   const selected = [...listElement.selectedOptions];
   const repetitionCount = parsePositiveInt(repetitionCountInput.value);
   if (repetitionCount === undefined) {
     throw new Error("wtf — The button should have been disabled.");
   }
+  const row = assertClass(rowTemplate.cloneNode(true), HTMLTableRowElement);
+  const [timestampCell, memoryCell, repeatCountCell, statusCell, buttonCell] =
+    row.children;
+  if (
+    !(
+      timestampCell instanceof HTMLTableCellElement &&
+      memoryCell instanceof HTMLTableCellElement &&
+      repeatCountCell instanceof HTMLTableCellElement &&
+      statusCell instanceof HTMLTableCellElement
+    )
+  ) {
+    throw new Error("wtf");
+  }
+  headerRow.parentElement!.insertBefore(row, headerRow.nextElementSibling);
+  var now = new Date();
+  timestampCell.innerText =
+    ((now.getHours() + 11) % 12) +
+    1 +
+    ":" +
+    now.getMinutes().toString().padStart(2, "0") +
+    ":" +
+    now.getSeconds().toString().padStart(2, "0");
+  selected.forEach((element, index) => {
+    if (index > 0) {
+      memoryCell.append(", ");
+    }
+    const span = document.createElement("span");
+    span.classList.add("memoryName");
+    span.innerText = getMemory(element).toString();
+    memoryCell.appendChild(span);
+    repeatCountCell.innerText = repetitionCount.toLocaleString();
+  });
+  const button = assertClass(buttonCell.firstElementChild, HTMLButtonElement);button;  // TODO use this!
+
   try {
     const milliseconds = await sendRequestToThread(
       selected.map(getMemory),
       repetitionCount
     );
-    console.log({
-      totalMilliseconds: milliseconds,
-      repetitionCount,
-      millisecondsPerRepetition: milliseconds / repetitionCount,
-    });
+    statusCell.innerText = `${simpleNumberFormat.format(
+      milliseconds * 1000
+    )}µs total, ${simpleNumberFormat.format(
+      (milliseconds * 1000) / repetitionCount
+    )}µs / repetition`;
+    statusCell.dataset["status"] = "complete";
   } catch (reason: unknown) {
-    console.error("test aborted", reason);
+    statusCell.innerText = reason + "";
+    statusCell.dataset["status"] = "error";
   }
 });
 
