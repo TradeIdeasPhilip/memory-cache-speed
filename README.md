@@ -1,6 +1,8 @@
 Status:  Runnable, more work is in progress.
 
-* On video: https://youtube.com/shorts/AqQ5JL59nLo?feature=share
+* On video
+  * [Newer](https://youtube.com/shorts/VJVuV1MNjCo)
+  * [Older](https://youtube.com/shorts/AqQ5JL59nLo?feature=share)
 * See it live: https://tradeideasphilip.github.io/memory-cache-speed/
 
 I know how to make memory fast in C++.

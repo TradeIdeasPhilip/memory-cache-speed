@@ -268,7 +268,8 @@ testButton.addEventListener("click", async () => {
     memoryCell.appendChild(span);
     repeatCountCell.innerText = repetitionCount.toLocaleString();
   });
-  const button = assertClass(buttonCell.firstElementChild, HTMLButtonElement);button;  // TODO use this!
+  const button = assertClass(buttonCell.firstElementChild, HTMLButtonElement);
+  button; // TODO use this!
 
   try {
     const milliseconds = await sendRequestToThread(
@@ -331,4 +332,23 @@ c++ gives you so much control over how your data is laid out.  You can possibly
 make things a lot faster by having related data all close together in memory.
 
 Is the same thing true in JavaScript?  Can I measure it?
+*/
+
+/*
+Worker Threads and Shared Memory for JavaScript Performance.
+
+I got an unexpected bonus.  
+I knew I'd have to create a worker thread to keep the GUI live.
+Now, with no additional work, I can run tests in multiple threads at once.
+
+
+As for my original question, I **can** see differences in different types of memory access in JavaScript.
+It is much faster to access the memory in order.
+Now i need to do some more organized tests.
+
+
+This is all leading up to some bigger questions.
+Does it make sense to store data in a B+ tree, even if it's all stored in memory and it never changes?
+
+See the link in the description to try this yourself.
 */
