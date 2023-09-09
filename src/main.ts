@@ -187,9 +187,11 @@ function getMemory(option: HTMLOptionElement): Uint32Array {
 
 function addMemoryOption(memory: Uint32Array): HTMLOptionElement {
   const option = document.createElement("option");
+  option.selected = true;
   option.innerText = memory.toString();
   setMemory(option, memory);
   listElement.appendChild(option);
+  updateGUI();
   return option;
 }
 
@@ -268,14 +270,20 @@ testButton.addEventListener("click", async () => {
     memoryCell.appendChild(span);
     repeatCountCell.innerText = repetitionCount.toLocaleString();
   });
-  const button = assertClass(buttonCell.firstElementChild, HTMLButtonElement);
-  button; // TODO use this!
 
   try {
-    const milliseconds = await sendRequestToThread(
+    const { promise, cancel } = sendRequestToThread(
       selected.map(getMemory),
       repetitionCount
     );
+    assertClass(
+      buttonCell.firstElementChild,
+      HTMLButtonElement
+    ).addEventListener("click", () => {
+      cancel();
+      row.remove();
+    });
+    const milliseconds = await promise;
     statusCell.innerText = `${simpleNumberFormat.format(
       milliseconds * 1000
     )}µs total, ${simpleNumberFormat.format(
@@ -288,10 +296,7 @@ testButton.addEventListener("click", async () => {
   }
 });
 
-async function sendRequestToThread(
-  memory: Uint32Array[],
-  repetitionCount: number
-) {
+function sendRequestToThread(memory: Uint32Array[], repetitionCount: number) {
   const worker = new Worker(new URL("./worker.ts", import.meta.url), {
     type: "module",
   });
@@ -324,7 +329,13 @@ async function sendRequestToThread(
     fromThread.reject("messageerror");
   });
   worker.postMessage(request);
-  return fromThread.promise;
+  return {
+    promise: fromThread.promise,
+    cancel(reason: unknown = "cancelled"): void {
+      fromThread.reject(reason);
+      worker.terminate();
+    },
+  };
 }
 
 /*

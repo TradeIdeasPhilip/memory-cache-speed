@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Memory Cache Speed Test</title>
     
-    <script type="module" crossorigin src="./assets/main-5888a8e7.js"></script>
-    <link rel="stylesheet" href="./assets/index-20b4ddde.css">
+    <script type="module" crossorigin src="./assets/main-d244a2cc.js"></script>
+    <link rel="stylesheet" href="./assets/index-32041b67.css">
   </head>
   <body>
     <div class="title">
@@ -44,6 +44,9 @@
         <th>Status</th>
         <th>✗</th>
       </tr>
+      <tr id="nothingToReport">
+        <td colspan="5">Nothing to report.</td>
+      </tr>
     </table>
     <template id="row">
       <tr>
@@ -51,7 +54,7 @@
         <td></td>
         <td class="repeatCount"></td>
         <td data-status="running">running</td>
-        <td><button>✗</button></td>
+        <td class="buttonHolder"><button>✗</button></td>
       </tr>
     </template>
   </body>

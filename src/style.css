@@ -50,12 +50,6 @@ select:empty::after {
   font-size: 36pt;
 }
 
-.threadRow {
-  display: flex;
-  column-gap: 0.5em;
-  align-items: center;
-}
-
 #threadList {
   border-spacing: 0.33em 0;
 }
@@ -82,4 +76,17 @@ select:empty::after {
 
 .repeatCount {
   text-align: right;
+}
+.buttonHolder {
+  text-align: center;
+}
+
+#nothingToReport {
+  text-align: center;
+  color: #ccc;
+  text-shadow: 1px 1px 1.5px black;
+}
+
+#nothingToReport:not(:nth-child(2)) {
+  display: none;
 }
